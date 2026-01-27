@@ -1,0 +1,970 @@
+{
+  "name": "MindFlow-Visual Tutor",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -2112,
+        -800
+      ],
+      "id": "4df68fdb-f952-455b-bd21-7da266601639",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -3776,
+        -496
+      ],
+      "id": "8dc0e7d4-4933-43f8-aad0-c866933cc6df",
+      "name": "No Operation, do nothing1"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -3936,
+        -800
+      ],
+      "id": "d6db08fe-d9ca-47dc-bbf0-c5f8c411039b",
+      "name": "USER MSG",
+      "webhookId": "8ae6d246-1876-4b7b-932c-94237bf57860",
+      "credentials": {
+        "telegramApi": {
+          "id": "rtEb12gaME5IsE6y",
+          "name": "MindFlow Visual Tutor"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a508e3df-77fb-4feb-9861-c1cfd9dcf638",
+              "leftValue": "={{ $json.message.entities[0].type }}",
+              "rightValue": "url",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -3760,
+        -800
+      ],
+      "id": "a995a721-db87-44e4-be8c-ee36ca4eb6ac",
+      "name": "YT URL CHECK"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('USER MSG').item.json.message.from.id }}",
+        "text": "=👋 Hi! I’m MindFlow-Visual Tutor.\n\nI turn YouTube lectures into\nclear steps and visual diagrams\nso learning becomes easier.\n\n👉 Please share a YouTube lecture link to begin.\n",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -3936,
+        -496
+      ],
+      "id": "36a1fff6-3f59-4414-9def-5c0f4753a05b",
+      "name": "SEND GREETING",
+      "webhookId": "c5003ba2-8b5b-49f6-9e63-ced98bbad7e0",
+      "credentials": {
+        "telegramApi": {
+          "id": "rtEb12gaME5IsE6y",
+          "name": "MindFlow Visual Tutor"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "95545bd5-af6b-4b46-84c3-86bc9c70c5fb",
+              "name": "youtube_url",
+              "value": "={{ $('USER MSG').item.json.message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3360,
+        -816
+      ],
+      "id": "6ee6a0f3-cffb-47ed-adaa-5b6d520570b8",
+      "name": "SET YT URL"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5d7471a5-7b26-44cb-959a-15b180f4355e",
+              "name": "videoId",
+              "value": "={{\n  $json.youtube_url.includes(\"youtu.be\")\n    ? $json.youtube_url.split(\"youtu.be/\")[1].split(\"?\")[0]\n    : $json.youtube_url.includes(\"v=\")\n      ? $json.youtube_url.split(\"v=\")[1].split(\"&\")[0]\n      : $json.youtube_url\n}}\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3184,
+        -816
+      ],
+      "id": "aa271477-f084-43aa-872e-0be5928ed817",
+      "name": "VIDEO_ID EXTRACT"
+    },
+    {
+      "parameters": {
+        "url": "https://api.supadata.ai/v1/youtube/transcript",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "=https://youtu.be/{{ $json.videoId }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "sd_b272"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -2992,
+        -816
+      ],
+      "id": "8a3dc506-c7ac-4e27-812c-e47bfcd33e9b",
+      "name": "EXTRACT TEXT FROM YT VIDEO[SUPADATA]"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "477fade3-4cff-475a-b12f-9219d115e3db",
+              "name": "clean_transcript",
+              "value": "={{ $json.content.map(item => item.text).join(' ') }}\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2784,
+        -816
+      ],
+      "id": "70189a8a-4b58-4e0e-8206-c93302dafcd1",
+      "name": "CLEAN TEXT"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.clean_transcript }}",
+        "options": {
+          "systemMessage": "You are a Diagram Normalizer.\n\nINPUT:\nA lecture transcript or technical explanation.\n\nYOUR JOB:\nExtract ONE clear learning flow from the content.\n\nRULES:\n- Identify the main topic being taught\n- Decide the correct teaching order\n- KEEP all key technical terms\n  (example: ANN, artificial neuron, linear regression, weights, bias, threshold,\n   feed forward network, yhat, supervised learning, cost function, gradient descent,\n   CNN, RNN)\n- Remove side stories, repetition, and commentary\n- Do NOT explain concepts\n- Do NOT simplify wording\n- Do NOT generate Mermaid\n- Do NOT add new concepts\n\nOUTPUT FORMAT:\nReturn a numbered list.\nEach item:\n- One core idea\n- Correct learning order\n- Includes key terms\n\nOUTPUT ONLY THE LIST.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -3520,
+        -416
+      ],
+      "id": "482399cb-af9a-4851-bc7e-52180c613361",
+      "name": "EXTRACT CORE LEARNING FLOW"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "=You are a Visual Learning Architect.\n\nINPUT:\nA numbered list of core ideas in correct order.\n\nYOUR JOB:\nRewrite each step so a complete beginner understands it,\nWITHOUT losing any key technical terms.\n\nIMPORTANT GOAL:\nYour output must be easy to convert into a visual diagram.\n\nSTRICT RULES:\n- Preserve ALL technical terms exactly as given\n- NEVER delete or rename a technical term\n- Explain technical terms using intuition, not replacement\n- Do NOT add new steps\n- Do NOT remove steps\n- Do NOT change the order\n- Do NOT generate Mermaid or any diagram syntax\n- Use simple spoken language\n\nSENTENCE STYLE RULES:\n- 6 to 10 words per step\n- Action → result phrasing\n- High-school understandable\n- Something a human could say out loud\n- No equations\n- No symbols\n- No parentheses\n\nCONTENT RULES:\n- One clear idea per step\n- Prefer clarity over precision\n- If a step feels abstract, make it concrete\n- Do NOT introduce examples not present in input\n\nOUTPUT FORMAT:\nReturn the SAME numbered list.\nEach item rewritten as a teaching sentence.\n\nOUTPUT ONLY THE LIST.\nNo explanations.\nNo extra text.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -3248,
+        -416
+      ],
+      "id": "e09b1ceb-05b4-492b-9db9-ebcd8cf617c0",
+      "name": "LEARNING ARCHITECT"
+    },
+    {
+      "parameters": {
+        "model": "moonshotai/kimi-k2-instruct",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -3376,
+        -208
+      ],
+      "id": "cb9e490e-c622-44f4-a34e-cc142bfc8023",
+      "name": "KIMI-K2-INSTRUCT",
+      "credentials": {
+        "groqApi": {
+          "id": "9VkuIcCWuznrmi9W",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -2784,
+        -224
+      ],
+      "id": "86178e41-5a07-4eab-9217-c052df095147",
+      "name": "GPT-OSS-120B",
+      "credentials": {
+        "groqApi": {
+          "id": "9VkuIcCWuznrmi9W",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://kroki.io/mermaid/png",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "text/plain",
+        "body": "={{ $json.output }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -2512,
+        -800
+      ],
+      "id": "0c36303c-084e-443a-bbf7-bd02816efa81",
+      "name": "RENDER MERMAID TO PNG"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('USER MSG').item.json.message.from.id }}",
+        "text": "={{ $('EXTRACT CORE LEARNING FLOW').item.json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -2288,
+        -800
+      ],
+      "id": "90f85421-c282-4510-bb5e-18811a82099a",
+      "name": "CORE LEARNING TEXT(SUMMARY)",
+      "webhookId": "d54ae169-3546-4608-b133-82a5d83ebfd8",
+      "credentials": {
+        "telegramApi": {
+          "id": "rtEb12gaME5IsE6y",
+          "name": "MindFlow Visual Tutor"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 0.5
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -2288,
+        -592
+      ],
+      "id": "3036fe03-211c-4e88-a06e-c04b14168118",
+      "name": "DIAGRAM DELAY",
+      "webhookId": "08d9d849-1f2a-4252-b7dd-fa98d5659c27"
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "={{ $('USER MSG').item.json.message.from.id }}",
+        "binaryData": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -2352,
+        -336
+      ],
+      "id": "99204249-ef82-4853-afc2-d718e87c3bb0",
+      "name": "SEND VISUAL MAP",
+      "webhookId": "b333535b-e827-4478-81ca-26d78cb30642",
+      "credentials": {
+        "telegramApi": {
+          "id": "rtEb12gaME5IsE6y",
+          "name": "MindFlow Visual Tutor"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d5ca9be9-258f-4584-8925-1efa41638352",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2256,
+        -96
+      ],
+      "id": "589995f3-7039-421c-9a89-f384fe99d66e",
+      "name": "CHECKING FOR MORE DOUBTS"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('SEND VISUAL MAP').item.json.result.chat.id }}",
+        "text": "=🙏 Thanks for using MindFlow-Visual Tutor.\n\nHope this helped clarify the topic.\nI share my learning and automation work\non LinkedIn and GitHub @OMI-KALIX as well.\n\nFeel free to follow along.\n",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -2048,
+        -80
+      ],
+      "id": "17d07953-9dcf-45ca-baa0-6b91245539e1",
+      "name": "CLOSE SESSION MSG",
+      "webhookId": "4ecb03d2-6e20-4842-846a-637313b52518",
+      "credentials": {
+        "telegramApi": {
+          "id": "rtEb12gaME5IsE6y",
+          "name": "MindFlow Visual Tutor"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "={{ $('USER MSG').item.json.message.from.id }}",
+        "message": "What part would you like me to explain?",
+        "responseType": "freeText",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -2096,
+        -464
+      ],
+      "id": "04518e68-7da5-4021-ba77-b7d043d6db7a",
+      "name": "USER DOUBTS/QUESTIONS",
+      "webhookId": "e25e4f13-9e2c-4e5b-971e-248b60308bbc",
+      "credentials": {
+        "telegramApi": {
+          "id": "rtEb12gaME5IsE6y",
+          "name": "MindFlow Visual Tutor"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "={{ $json.result.chat.id }} ",
+        "message": "Any doubts in this diagram?\n",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double"
+          }
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -2464,
+        -96
+      ],
+      "id": "3098233d-ebe4-4090-b937-253ae12ef3c9",
+      "name": "USER DOUBT CONFIRMATION",
+      "webhookId": "364dce99-e4e0-4605-8ce5-4c030f1c3f71",
+      "credentials": {
+        "telegramApi": {
+          "id": "rtEb12gaME5IsE6y",
+          "name": "MindFlow Visual Tutor"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data.text }}",
+        "options": {
+          "systemMessage": "=You are SkillBridge Visual AI, a helpful and accurate learning assistant.\n\nYou will be given:\n1. A structured learning explanation (text)\n2. A Mermaid flowchart diagram representing the same concept\n3. A user question about the topic, a step, or a node in the diagram\n\nINPUT CONTEXT:\nLearning Explanation:\n{{ $('LEARNING ARCHITECT').item.json.output }}\n\nMermaid Diagram:\n{{ $('VISUAL ARCHITECT').item.json.output }}\n\nYOUR TASK:\nAnswer the user’s question using ONLY the information from the learning explanation and the diagram.\n\nBEHAVIOR RULES (VERY IMPORTANT):\n- Be clear, calm, and teacher-like\n- Assume the user is a beginner\n- Explain step-by-step when needed\n- Use simple language but KEEP all technical terms\n- If the question refers to a node (A, B, C, etc), explain that node’s role in the flow\n- If the question refers to a concept, explain where it appears in the diagram and why it matters\n- You MAY give simple real-world examples to improve understanding\n- Examples must be intuitive and beginner-friendly\n- Do NOT introduce new technical concepts not present in the input\n- Do NOT contradict the diagram or the learning steps\n- Do NOT mention Mermaid, AI Agent numbers, or internal workflow details\n\nANSWER STYLE:\n- 1–2 short paragraphs OR\n- Bullet points if explaining steps\n- Examples should be short and relatable\n- No equations\n- No symbols\n- No markdown\n- No emojis\n\nFAILSAFE RULE:\nIf the question cannot be answered using the provided explanation and diagram, respond with:\n“I can explain this only based on the current diagram and learning steps. Please ask a question related to them.”\n\nOUTPUT:\nReturn ONLY the answer to the user.\nNo extra commentary.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -1952,
+        -576
+      ],
+      "id": "416c2128-4467-405b-acb6-e923695d3470",
+      "name": "Answer Question Using Diagram"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -1952,
+        -336
+      ],
+      "id": "96710a4b-107e-4030-aaee-a5b284d3f191",
+      "name": "LLAMA3.2",
+      "credentials": {
+        "ollamaApi": {
+          "id": "XzeXVzZagz4Tv0n1",
+          "name": "Ollama account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('USER MSG').item.json.message.from.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1776,
+        -96
+      ],
+      "id": "29c90a1e-b089-45a4-90e5-1776bb4e31ce",
+      "name": "FINAL ANS. OF DOUBT/QUESTION",
+      "webhookId": "fcce3dfd-e4d5-4212-b2c1-0b3b6b1ca847",
+      "credentials": {
+        "telegramApi": {
+          "id": "rtEb12gaME5IsE6y",
+          "name": "MindFlow Visual Tutor"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# MindFlow-Visual Tutor ( LEC. TO VIZ. )",
+        "height": 1088,
+        "width": 2432,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -4000,
+        -976
+      ],
+      "typeVersion": 1,
+      "id": "91e45898-7e0a-4e36-8c04-aaada04ab01a",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## ENTRY & VALIDATION",
+        "height": 800,
+        "width": 416,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -4000,
+        -896
+      ],
+      "typeVersion": 1,
+      "id": "da515c08-1f7a-4baf-aca7-f2ea75010813",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('USER MSG').item.json.message.chat.id }}",
+        "text": "=⚙️ MindFlow-Visual Tutor is working…\n\nExtracting concepts  \nBuilding the learning flow  \nGenerating a visual diagram  \n\nPlease wait a moment ⏳\n",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -3520,
+        -816
+      ],
+      "id": "3ad3a176-6f14-4091-8923-9b18161ac4f2",
+      "name": "WORKING MSG STATUS",
+      "webhookId": "6a903f74-d59d-4410-a203-f44b67ea2552",
+      "credentials": {
+        "telegramApi": {
+          "id": "rtEb12gaME5IsE6y",
+          "name": "MindFlow Visual Tutor"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "##  AI LEARNING PIPELINE (CORE INTELLIGENCE)",
+        "height": 416,
+        "width": 608
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3568,
+        -512
+      ],
+      "typeVersion": 1,
+      "id": "82212b31-7bcf-431c-9221-898eaa50700d",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## START PROCESSING PATH (URL FOUND)",
+        "height": 336,
+        "width": 944
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3568,
+        -896
+      ],
+      "typeVersion": 1,
+      "id": "825802d1-ca38-4ade-b2a3-dd5c02c207ef",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## DIAGRAM GENERATION PIPELINE",
+        "height": 416,
+        "width": 320
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2944,
+        -512
+      ],
+      "typeVersion": 1,
+      "id": "1a212c9a-c08c-4505-9c07-cef3081c6396",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "=You are a Visual Learning Architect and a Mermaid.js flowchart expert.\n\nINPUT\nA numbered list of beginner-friendly teaching sentences.\n\nYOUR JOB\nConvert the input into ONE clear Mermaid flowchart that visually teaches the concept from zero knowledge.\nA complete beginner should understand the full idea just by following the arrows.\n\nGOAL\nExplain how the concept works using a simple cause to effect flow that feels like explaining to a friend.\n\nGRAPH TYPE MANDATORY\n\n* Use graph TD\n* Show clear cause to effect progression\n* Use decision diamonds ONLY when a real choice exists\n* Keep ONE fully connected graph\n\nKEY TERM RULE VERY IMPORTANT\n\n* Preserve ALL technical terms from the input\n* Do NOT rename or delete technical terms\n* If a term is complex explain it briefly in the SAME node\n* Simplify by explanation not by deletion\n\nMISSING INFORMATION RULE ALLOWED WITH LIMITS\nIf the input implicitly depends on a step required for logical flow beginner understanding or technical correctness you MAY add a small number of supporting nodes.\n\nRules for added nodes\n\n* Must be standard and widely accepted concepts\n* Must connect existing technical terms\n* Must NOT introduce new advanced ideas\n* Must explain what happens next\n\nExample\nIf inputs and weights are mentioned but output is missing you may add\nWeighted sum produces prediction\n\nNODE WRITING RULES\n\n* 5 to 10 words per node\n* One idea per node\n* Simple spoken language\n* Action to result wording\n* High school readable\n\nLOGIC RULES\n\n* Do NOT show false choices\n* Feedforward vs CNN vs RNN is NOT a decision\n* Show base process first\n* Show special cases later\n* If learning exists show the training loop explicitly\n\nMERMAID SYNTAX RULES STRICT\n\n* Output ONLY Mermaid code\n* Start directly with graph TD\n* EVERY node MUST have a unique node ID such as A B C\n* NEVER connect nodes as [Text] --> [Text]\n* Always connect using node IDs like A --> B\n\nNODE FORMAT RULES\n\n* Use [Text] for process steps\n* Use {Text} for real decisions\n* Use --> for arrows\n* Use |label| only for decision branches\n\nCHARACTER SAFETY RULES CRITICAL\n\n* Do NOT use special characters\n* No arrows like -> or unicode arrows\n* No dots or math symbols\n* Do NOT use parentheses\n* Use plain words only\n\nExample\nBAD y hat equals sum of x times w\nGOOD Weighted sum produces prediction\n\nDO NOT USE\n\n* Markdown\n* Comments\n* Icons\n* Multiple graphs\n* Parallel mini diagrams\n* Extra text outside Mermaid\n\nFINAL OUTPUT RULES\n\n* Return ONLY Mermaid code\n* No explanations\n* No extra text\n* Must render successfully in Mermaid Live and Kroki\n\nINPUT TO TRANSFORM\n{{ $json.output }}\n\nNOW CREATE THE GRAPH\nMake it logical\nMake it visual\nMake it easy to understand\nMake it unforgettable\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -2896,
+        -416
+      ],
+      "id": "3ef22879-8ba3-4922-b63b-6e4416b29bf8",
+      "name": "VISUAL ARCHITECT"
+    },
+    {
+      "parameters": {
+        "content": "## DELIVERY TO USER & INTERACTIVE Q&A LOOP",
+        "height": 1008,
+        "width": 1040,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2592,
+        -896
+      ],
+      "typeVersion": 1,
+      "id": "46dddf67-d919-466b-8ce1-46896deada53",
+      "name": "Sticky Note5"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "USER MSG": {
+      "main": [
+        [
+          {
+            "node": "YT URL CHECK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YT URL CHECK": {
+      "main": [
+        [
+          {
+            "node": "WORKING MSG STATUS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SEND GREETING",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SEND GREETING": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SET YT URL": {
+      "main": [
+        [
+          {
+            "node": "VIDEO_ID EXTRACT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VIDEO_ID EXTRACT": {
+      "main": [
+        [
+          {
+            "node": "EXTRACT TEXT FROM YT VIDEO[SUPADATA]",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EXTRACT TEXT FROM YT VIDEO[SUPADATA]": {
+      "main": [
+        [
+          {
+            "node": "CLEAN TEXT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CLEAN TEXT": {
+      "main": [
+        [
+          {
+            "node": "EXTRACT CORE LEARNING FLOW",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EXTRACT CORE LEARNING FLOW": {
+      "main": [
+        [
+          {
+            "node": "LEARNING ARCHITECT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LEARNING ARCHITECT": {
+      "main": [
+        [
+          {
+            "node": "VISUAL ARCHITECT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "KIMI-K2-INSTRUCT": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "EXTRACT CORE LEARNING FLOW",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "LEARNING ARCHITECT",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT-OSS-120B": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "VISUAL ARCHITECT",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RENDER MERMAID TO PNG": {
+      "main": [
+        [
+          {
+            "node": "CORE LEARNING TEXT(SUMMARY)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "DIAGRAM DELAY",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CORE LEARNING TEXT(SUMMARY)": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DIAGRAM DELAY": {
+      "main": [
+        [
+          {
+            "node": "SEND VISUAL MAP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SEND VISUAL MAP": {
+      "main": [
+        [
+          {
+            "node": "USER DOUBT CONFIRMATION",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHECKING FOR MORE DOUBTS": {
+      "main": [
+        [
+          {
+            "node": "USER DOUBTS/QUESTIONS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CLOSE SESSION MSG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "USER DOUBTS/QUESTIONS": {
+      "main": [
+        [
+          {
+            "node": "Answer Question Using Diagram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "USER DOUBT CONFIRMATION": {
+      "main": [
+        [
+          {
+            "node": "CHECKING FOR MORE DOUBTS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Answer Question Using Diagram": {
+      "main": [
+        [
+          {
+            "node": "FINAL ANS. OF DOUBT/QUESTION",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLAMA3.2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Answer Question Using Diagram",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FINAL ANS. OF DOUBT/QUESTION": {
+      "main": [
+        [
+          {
+            "node": "USER DOUBT CONFIRMATION",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WORKING MSG STATUS": {
+      "main": [
+        [
+          {
+            "node": "SET YT URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VISUAL ARCHITECT": {
+      "main": [
+        [
+          {
+            "node": "RENDER MERMAID TO PNG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "583ff696-bfde-4226-9242-1fbcb2cfb2a3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "L7Hy2MGJUuePDkuM",
+  "tags": []
+}
