@@ -120,7 +120,7 @@ mindflow-visual-tutor/
 Bot link:
 
 ```
-[https://t.me/MindFlow_VisualTutor_bot]
+https://t.me/MindFlow_VisualTutor_bot
 ```
 
 ### ⚠️ Note
