@@ -101,10 +101,10 @@ mindflow-visual-tutor/
 │   └── mindflow-visual-tutor.json
 │
 ├── prompts/
-│   ├── extract-learning-flow.md
-│   ├── beginner-rewrite.md
-│   ├── diagram-generator.md
-│   └── question-answering.md
+│   ├── EXTRACT CORE LEARNING FLOW.md
+│   ├── LEARNING ARCHITECT.md
+│   ├── VISUAL ARCHITECT..md
+│   └── Answer Question Using Diagram.md
 │
 ├── assets/
 │   ├── demo.mp4
